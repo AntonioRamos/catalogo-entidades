@@ -1,0 +1,121 @@
+
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Repositório de Entidades</title>
+  assets/style.css
+</head>
+<body>
+  <header>
+    <main style="padding:0">
+      <div style="display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap">
+        <h1 style="margin:0;font-size:20px">Repositório de Entidades</h1>
+        <nav style="display:flex;gap:12px">mapa.htmlMapa</a>index.htmlLista</a></nav>
+      </div>
+    </main>
+  </header>
+  <main>
+    <div class="controls">
+      <input id="q" placeholder="Pesquisar por nome, categoria, concelho…" />
+      <select id="f_tipologia"><option value="">Tipologia</option></select>
+      <select id="f_categoria"><option value="">Categoria</option></select>
+      <select id="f_concelho"><option value="">Concelho</option></select>
+    </div>
+    <div id="count" class="meta" style="margin-top:10px"></div>
+    <div id="grid" class="grid"></div>
+  </main>
+  <footer>Dados em <code>data/entidades.json</code> · Jamstack estático</footer>
+
+  <script>
+    const norm = s => (s||"").toString()
+      .toLowerCase()
+      .normalize("NFD").replace(/\p{Diacritic}/gu,"")
+      .replace(/\s+/g," ").trim();
+
+    let ENT = [];
+    let facets = { tipologias:[], categorias:[], concelhos:[] };
+
+    async function load() {
+      ENT = await fetch("data/entidades.json").then(r=>r.json());
+      buildFacets();
+      render();
+    }
+
+    function buildFacets() {
+      const setTip = new Set(), setCat = new Set(), setConc = new Set();
+      ENT.forEach(e=>{
+        (e.tipologias||[]).forEach(t=>setTip.add(t));
+        (e.categorias||[]).forEach(c=>setCat.add(c.path.join(" › ")));
+        const conc = e?.morada?.concelho; if (conc) setConc.add(conc);
+      });
+      facets.tipologias = Array.from(setTip).sort((a,b)=>a.localeCompare(b,'pt'));
+      facets.categorias = Array.from(setCat).sort((a,b)=>a.localeCompare(b,'pt'));
+      facets.concelhos = Array.from(setConc).sort((a,b)=>a.localeCompare(b,'pt'));
+
+      const tip = document.getElementById("f_tipologia");
+      facets.tipologias.forEach(v=>tip.append(new Option(v,v)));
+      const cat = document.getElementById("f_categoria");
+      facets.categorias.forEach(v=>cat.append(new Option(v,v)));
+      const conc = document.getElementById("f_concelho");
+      facets.concelhos.forEach(v=>conc.append(new Option(v,v)));
+    }
+
+    function applyFilters() {
+      const q = norm(document.getElementById("q").value);
+      const fTip = document.getElementById("f_tipologia").value;
+      const fCat = document.getElementById("f_categoria").value;
+      const fConc = document.getElementById("f_concelho").value;
+
+      return ENT.filter(e=>{
+        if (fTip && !(e.tipologias||[]).includes(fTip)) return false;
+        if (fCat && !((e.categorias||[]).some(c => c.path.join(" › ")===fCat))) return false;
+        if (fConc && (e?.morada?.concelho||"") !== fConc) return false;
+
+        if (!q) return true;
+        const hay = [
+          e.nome, e.descricao,
+          (e.tipologias||[]).join(" "),
+          (e.categorias||[]).map(c=>c.path.join(" ")).join(" "),
+          e?.morada?.concelho||"", e?.morada?.distrito||""
+        ].map(norm).join(" ");
+        return hay.includes(q);
+      });
+    }
+
+    function render() {
+      const list = applyFilters().sort((a,b)=>a.nome.localeCompare(b.nome,'pt'));
+      document.getElementById("count").textContent = `${list.length} resultado(s)`;
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      list.forEach(e=>{
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+          <h3>${e.nome}</h3>
+          <div class="meta">${e?.morada?.concelho||""}${e?.morada?.concelho&&e?.morada?.distrito?" · ":""}${e?.morada?.distrito||""}</div>
+          <p>${e.descricao||""}</p>
+          <div class="badges">
+            ${(e.tipologias||[]).map(t=>`<span class="badge">${t}</span>`).join("")}
+            ${(e.categorias||[]).map(c=>`<span class="badge">${c.path.join(" › ")}</span>`).join("")}
+          </div>
+          <div style="margin-top:8px">
+            ${e?.contatos?.website?`${e.contatos.website}Website</a>`:""}
+            ${e?.morada?.geo?` · <a href="https://www.openstreetmap.org/?mlat=${e.morada.geo.coordinates[1]}&mlon=${e.morada.geo.coordinates[0]}#map=16/${eeo.coordinates[1]}/${e.morada.geo.coordinates[0]}Ver no mapa</a>`:""}
+          </div>
+        `;
+        grid.appendChild(el);
+      });
+    }
+
+    ["q","f_tipologia","f_categoria","f_concelho"].forEach(id=>{
+      document.addEventListener("input", e=>{
+        if (e.target && e.target.id===id) render();
+      }, { passive:true });
+    });
+
+    load();
+  </script>
+</body>
+</html>
