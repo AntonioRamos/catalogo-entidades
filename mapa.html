@@ -1,0 +1,41 @@
+
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Mapa de Entidades</title>
+  assets/style.css
+  <link rel="kg.com/leaflet@1.9.4/dist/leaflet.css
+  <style>#map{height:85vh;border-radius:12px;border:1px solid #eee}</style>
+</head>
+<body>
+  <header>
+    <main style="padding:0">
+      <div style="display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap">
+        <h1 style="margin:0;font-size:20px">Mapa</h1>
+        <nav style="display:flex;gap:12px">index.htmlLista</a></nav>
+      </div>
+    </main>
+  </header>
+  <main>
+    <div id="map"></div>
+  </main>
+  https://unpkg.com/leaflet@1.9.4/dist/leaflet.js</script>
+  <script>
+    const map = L.map('map').setView([38.7369, -9.1427], 11); // Lisboa
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    fetch("data/entidades.json").then(r=>r.json()).then(rows=>{
+      rows.filter(e => e?.morada?.geo?.coordinates).forEach(e=>{
+        const [lon, lat] = e.morada.geo.coordinates;
+        const m = L.marker([lat, lon]).addTo(map);
+        m.bindPopup(`<b>${e.nome}</b><br>${e?.morada?.linha1||""}<br>${e?.contatos?.website||Website</a>`);
+      });
+    });
+  </script>
+</body>
+</html>

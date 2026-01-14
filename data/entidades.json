@@ -1,0 +1,55 @@
+
+[
+    {
+      "id": "ent_museu_nacional_arte_antiga",
+      "slug": "museu-nacional-arte-antiga",
+      "nome": "Museu Nacional de Arte Antiga",
+      "descricao": "Coleções de arte portuguesa e europeia.",
+      "ambito": "nacional",
+      "morada": {
+        "linha1": "R. das Janelas Verdes",
+        "codigo_postal": "1249-017",
+        "localidade": "Lisboa",
+        "concelho": "Lisboa",
+        "distrito": "Lisboa",
+        "pais": "Portugal",
+        "geo": { "type": "Point", "coordinates": [-9.1559, 38.7065] }
+      },
+      "contatos": {
+        "telefone": "+351 213 912 800",
+        "email": "info@mnaa.dgpc.pt",
+        "website": "https://museudearteantiga.pt"
+      },
+      "tipologias": ["museu"],
+      "categorias": [{ "path": ["cultura", "arte"] }],
+      "tags": ["exposições", "pintura", "escultura"],
+      "estado": "publicado",
+      "fonte": "curadoria-equipa"
+    },
+    {
+      "id": "ent_pavilhao_conhecimento",
+      "slug": "pavilhao-do-conhecimento",
+      "nome": "Pavilhão do Conhecimento",
+      "descricao": "Museu interativo de ciência e tecnologia.",
+      "ambito": "nacional",
+      "morada": {
+        "linha1": "Largo José Mariano Gago",
+        "codigo_postal": "1990-223",
+        "localidade": "Lisboa",
+        "concelho": "Lisboa",
+        "distrito": "Lisboa",
+        "pais": "Portugal",
+        "geo": { "type": "Point", "coordinates": [-9.0947, 38.7639] }
+      },
+      "contatos": {
+        "telefone": "+351 218 917 100",
+        "website": "https://www.pavconhecimento.pt"
+      },
+      "tipologias": ["museu"],
+      "categorias": [{ "path": ["cultura", "ciência"] }],
+      "tags": ["famílias", "educação"],
+      "estado": "publicado",
+      "fonte": "curadoria-equipa"
+    }
+  ]
+  
