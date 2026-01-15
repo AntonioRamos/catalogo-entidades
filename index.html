@@ -1,96 +1,91 @@
-
 <!doctype html>
 <html lang="pt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rede Ageas – Listagem</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rede Ageas — Lista</title>
+<link rel="stylesheet" href="assets/style.css"/>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <img class="logo" src="https://www.ageas.pt/media/4874/logotipo-da-ageas-seguros.png" alt="Ageas Seguros" />
-      <div class="spacer"></div>
-      <a class="btn secondary" href="mapa.html">Ver Mapa</a>
-    </div>
-  </header>
+<header class="header">
+  <h1>Rede Ageas — Entidades</h1>
+  <nav><a class="link" href="mapa.html">Ver mapa</a></nav>
+</header>
+<main class="container">
+  <div class="controls">
+    <input id="q" placeholder="Pesquisar (entidade, estabelecimento, morada)…" style="min-width:260px"/>
+    <select id="sel-tip"><option value="">Tipificação (todas)</option></select>
+    <select id="sel-dis"><option value="">Distrito (todos)</option></select>
+    <select id="sel-loc"><option value="">Localidade (todas)</option></select>
+    <span class="count" id="count"></span>
+  </div>
+  <table class="table" id="tbl">
+    <thead>
+      <tr>
+        <th>Entidade</th>
+        <th>Estabelecimento</th>
+        <th>Tipificação</th>
+        <th>Distrito</th>
+        <th>Localidade</th>
+        <th>Telefone</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
+<footer class="footer">Dados: <code>data/entidades.json</code> • Mapa em <a class="link" href="mapa.html">mapa.html</a></footer>
+<script>
+const state = {data:[], q:'', tip:'', dis:'', loc:''};
+const elQ = document.getElementById('q');
+const elTip = document.getElementById('sel-tip');
+const elDis = document.getElementById('sel-dis');
+const elLoc = document.getElementById('sel-loc');
+const elBody = document.querySelector('#tbl tbody');
+const elCount = document.getElementById('count');
 
-  <section class="hero">
-    <div class="container inner">
-      <div>
-        <h1>Rede Ageas 2025</h1>
-        <p>Procure e filtre a listagem de entidades. Agora com novo layout com destaque ao mapa e cores institucionais.</p>
-        <div class="cta">
-          <a class="primary" href="mapa.html">Abrir mapa</a>
-          <a class="ghost" href="#lista">Ir para listagem</a>
-        </div>
-      </div>
-      <div>
-        <div style="aspect-ratio:16/10; border-radius:16px; border:2px solid var(--accent-strong); background:linear-gradient(135deg, var(--accent), #fff); display:grid; place-items:center; color:#fff; font-weight:800; font-size:clamp(18px,2.2vw,24px);">Mapa Interativo</div>
-      </div>
-    </div>
-  </section>
+fetch('data/entidades.json').then(r=>r.json()).then(rows=>{
+  state.data = rows;
+  const tips = [...new Set(rows.map(r=>r.tipificacao).filter(Boolean))].sort();
+  tips.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;elTip.appendChild(o);});
+  const diss = [...new Set(rows.map(r=>r.distrito).filter(Boolean))].sort();
+  diss.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;elDis.appendChild(o);});
+  render();
+});
 
-  <main class="container" id="lista">
-    <div class="searchbar">
-      <input id="q" type="search" placeholder="Pesquisar por nome, entidade, localidade ou distrito…" />
-      <select id="filtro-distrito"><option value="">Todos os distritos</option></select>
-      <select id="filtro-tip"><option value="">Todas as tipificações</option></select>
-    </div>
+elQ.addEventListener('input', e=>{state.q=e.target.value.toLowerCase(); render();});
+elTip.addEventListener('change', e=>{state.tip=e.target.value; render(); syncLoc();});
+elDis.addEventListener('change', e=>{state.dis=e.target.value; render(); syncLoc();});
+elLoc.addEventListener('change', e=>{state.loc=e.target.value; render();});
 
-    <div id="stats" style="margin-top:10px; color:var(--muted);"></div>
-    <div class="list" id="cards"></div>
-  </main>
+function syncLoc(){
+  const locs = [...new Set(state.data.filter(f=>(!state.dis||f.distrito===state.dis)).map(r=>r.localidade).filter(Boolean))].sort();
+  elLoc.innerHTML = '<option value="">Localidade (todas)</option>' + locs.map(l=>`<option>${l}</option>`).join('');
+}
 
-  <footer class="footer">&copy; Ageas Seguros. Dados atualizados automaticamente do Excel.</footer>
-
-  <script>
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-  let DATA = [];
-
-  function badgeCaps(caps) {
-    const items = [];
-    for (const [k,v] of Object.entries(caps)) { if (v) items.push(k); }
-    return items.map(t => `<span class="badge">${t}</span>`).join('');
-  }
-
-  function render() {
-    const q = $('#q').value.trim().toLowerCase();
-    const fd = $('#filtro-distrito').value;
-    const ft = $('#filtro-tip').value;
-    let rows = DATA.filter(r => {
-      const txt = (r.nome + ' ' + r.entidade + ' ' + r.localidade + ' ' + r.distrito + ' ' + r.tipificacao).toLowerCase();
-      return (!q || txt.includes(q)) && (!fd || r.distrito === fd) && (!ft || r.tipificacao === ft);
-    });
-    $('#stats').textContent = `${rows.length} de ${DATA.length} resultados`;
-    $('#cards').innerHTML = rows.map(r => `
-      <article class="card">
-        <div class="name">${r.nome || r.estabelecimento || r.entidade}</div>
-        <div>${r.morada} ${r.codigo_postal ? ' • ' + r.codigo_postal : ''} </div>
-        <div>${r.localidade} ${r.distrito ? ' • ' + r.distrito : ''}</div>
-        <div style="color:var(--muted);">${r.tipificacao}</div>
-        <div class="badges">${badgeCaps(r.capabilities)}</div>
-        <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap;">
-          ${r.telefone ? `<a href="tel:${r.telefone}" class="badge">📞 ${r.telefone}</a>` : ''}
-          ${r.email ? `<a href="mailto:${r.email}" class="badge">✉️ ${r.email}</a>` : ''}
-          ${(r.lat && r.lon) ? `<a class="badge" target="_blank" href="https://maps.google.com/?q=${r.lat},${r.lon}">🗺️ Ver no mapa</a>` : ''}
-        </div>
-      </article>
-    `).join('');
-  }
-
-  fetch('entidades.json').then(r => r.json()).then(rows => {
-    DATA = rows;
-    const distritos = [...new Set(rows.map(r => r.distrito).filter(Boolean))].sort();
-    const tips = [...new Set(rows.map(r => r.tipificacao).filter(Boolean))].sort();
-    $('#filtro-distrito').innerHTML += distritos.map(d => `<option value="${d}">${d}</option>`).join('');
-    $('#filtro-tip').innerHTML += tips.map(t => `<option value="${t}">${t}</option>`).join('');
-    render();
+function render(){
+  const rows = state.data.filter(r=>{
+    if(state.tip && r.tipificacao!==state.tip) return false;
+    if(state.dis && r.distrito!==state.dis) return false;
+    if(state.loc && r.localidade!==state.loc) return false;
+    if(state.q){
+      const s = (r.entidade||'')+' '+(r.estabelecimento||'')+' '+(r.morada||'')+' '+(r.localidade||'')+' '+(r.distrito||'');
+      if(!s.toLowerCase().includes(state.q)) return false;
+    }
+    return true;
   });
-
-  $$('#q, #filtro-distrito, #filtro-tip').forEach(el => el.addEventListener('input', render));
-  </script>
+  elCount.textContent = `${rows.length} resultados`;
+  elBody.innerHTML = rows.map(r=>`<tr>
+    <td>${esc(r.entidade)}</td>
+    <td>${esc(r.estabelecimento||'')}</td>
+    <td><span class="badge">${esc(r.tipificacao||'')}</span></td>
+    <td>${esc(r.distrito||'')}</td>
+    <td>${esc(r.localidade||'')}</td>
+    <td>${esc(r.telefone||'')}</td>
+    <td>${r.email?`<a class="link" href="mailto:${esc(r.email)}">${esc(r.email)}</a>`:''}</td>
+  </tr>`).join('');
+}
+function esc(s){return (s||'').toString().replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+</script>
 </body>
 </html>

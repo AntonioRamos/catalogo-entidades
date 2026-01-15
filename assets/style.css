@@ -1,50 +1,15 @@
 
-:root {
-  --bg: #ffffff;
-  --text: #111111;
-  --muted: #6b7280;
-  --accent: #67c4d3bf; /* semi-transparent teal */
-  --accent-rgba: rgba(103,196,211,0.75);
-  --accent-strong: #d30773; /* magenta */
-  --card: #ffffff;
-  --border: #e5e7eb;
-}
-* { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,
-  Cantarell,Noto Sans,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol',sans-serif; }
-a { color: var(--accent-strong); text-decoration: none; }
-header { position: sticky; top: 0; z-index: 20; backdrop-filter: saturate(1.2) blur(6px); background: color-mix(in oklab, white 75%, var(--accent) 25%); border-bottom: 1px solid var(--border); }
-.nav { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 16px; }
-.nav img.logo { height: 40px; width: auto; display: block; }
-.nav .spacer { flex: 1; }
-.nav a.btn { padding: 10px 14px; border: 1px solid var(--accent-strong); color: #fff; background: var(--accent-strong); border-radius: 999px; font-weight: 600; }
-.nav a.btn.secondary { background: transparent; color: var(--accent-strong); }
-
-.container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
-.hero { background: linear-gradient(180deg, var(--accent-rgba), rgba(255,255,255,0.9)); }
-.hero .inner { display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; gap: 24px; padding: 32px 16px; }
-.hero h1 { font-size: clamp(28px, 3.5vw, 40px); margin: 0 0 8px 0; }
-.hero p { color: var(--muted); margin: 0 0 16px 0; }
-.hero .cta { display: flex; gap: 12px; flex-wrap: wrap; }
-.hero .cta a { padding: 12px 18px; border-radius: 999px; font-weight: 700; }
-.hero .cta .primary { background: var(--accent-strong); color: #fff; }
-.hero .cta .ghost { border: 2px solid var(--accent-strong); color: var(--accent-strong); background: transparent; }
-
-.searchbar { display: flex; gap: 12px; padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
-.searchbar input, .searchbar select { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); }
-.list { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 16px; margin-top: 18px; }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: grid; gap: 6px; }
-.card .name { font-weight: 700; }
-.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--accent); background: color-mix(in oklab, white 85%, var(--accent) 15%); }
-.footer { color: var(--muted); padding: 24px 16px; border-top: 1px solid var(--border); text-align: center; }
-
-/* Map page emphasis */
-.map-wrap { height: calc(100vh - 70px); }
-#map { width: 100%; height: 100%; border: 2px solid var(--accent-strong); border-left: none; border-right: none; }
-.leaflet-popup-content-wrapper { border-radius: 12px !important; }
-.leaflet-control-zoom a { background: var(--accent-strong) !important; color: #fff !important; }
-
-@media (max-width: 900px) {
-  .hero .inner { grid-template-columns: 1fr; }
-}
+:root{--bg:#0b132b;--card:#1c2541;--ink:#f4f4f6;--accent:#5bc0be;--muted:#b8c1ec}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.header{padding:16px 24px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.header h1{font-size:20px;margin:0;font-weight:600}
+.container{padding:16px 24px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+input,select{background:#0f1840;color:var(--ink);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 10px}
+.table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px}
+.table th{position:sticky;top:0;background:#18213f;text-align:left}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(91,192,190,.15);color:#b7ffff;font-size:12px}
+.footer{padding:12px 24px;color:var(--muted);font-size:12px}
+.link{color:var(--accent);text-decoration:none}
+.count{opacity:.8}
