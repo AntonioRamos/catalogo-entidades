@@ -2,65 +2,53 @@
 <!doctype html>
 <html lang="pt">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rede Ageas — Mapa</title>
-<link rel="stylesheet" href="assets/style.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<style>#map{height:calc(100vh - 80px); border-top:1px solid rgba(255,255,255,.07)}</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rede Ageas – Mapa</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
-<header class="header">
-  <h1>Rede Ageas — Mapa</h1>
-  <nav><a class="link" href="index.html">Ver lista</a></nav>
-</header>
-<div class="container">
-  <div class="controls">
-    <select id="sel-tip"><option value="">Tipificação (todas)</option></select>
-    <select id="sel-dis"><option value="">Distrito (todos)</option></select>
-    <span class="count" id="count"></span>
+  <header>
+    <div class="nav">
+      <img class="logo" src="https://www.ageas.pt/media/4874/logotipo-da-ageas-seguros.png" alt="Ageas Seguros" />
+      <div class="spacer"></div>
+      <a class="btn secondary" href="index.html">Listagem</a>
+    </div>
+  </header>
+  <div class="map-wrap">
+    <div id="map"></div>
   </div>
-</div>
-<div id="map"></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-let map = L.map('map').setView([39.6, -8.1], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; OpenStreetMap'}).addTo(map);
-const tipSel = document.getElementById('sel-tip');
-const disSel = document.getElementById('sel-dis');
-const countEl = document.getElementById('count');
-let all = [], markers;
+  <script>
+    const map = L.map('map').setView([39.6945, -8.1306], 7);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
 
-fetch('data/entidades.geojson').then(r=>r.json()).then(gj=>{
-  all = gj.features;
-  const tips = [...new Set(all.map(f=>f.properties.tipificacao).filter(Boolean))].sort();
-  tips.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;tipSel.appendChild(o);});
-  const diss = [...new Set(all.map(f=>f.properties.distrito).filter(Boolean))].sort();
-  diss.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;disSel.appendChild(o);});
-  render();
-});
-
-tipSel.onchange = disSel.onchange = render;
-
-function render(){
-  if(markers) markers.clearLayers();
-  markers = L.layerGroup();
-  const selTip = tipSel.value, selDis = disSel.value;
-  let n=0;
-  all.forEach(f=>{
-    const p=f.properties; const [lon,lat]=f.geometry.coordinates; 
-    if(selTip && p.tipificacao!==selTip) return;
-    if(selDis && p.distrito!==selDis) return;
-    const m=L.marker([lat,lon]);
-    const mail = p.email?`<br/><a class="link" href="mailto:${p.email}">${p.email}</a>`:'';
-    const tel = p.telefone?`<br/>📞 ${p.telefone}`:'';
-    m.bindPopup(`<b>${esc(p.entidade||'')}</b><br/>${esc(p.estabelecimento||'')}${tel}${mail}<br/><small>${esc(p.morada||'')} ${esc(p.codigo_postal||'')} • ${esc(p.localidade||'')} • ${esc(p.distrito||'')}</small><br/><span class='badge'>${esc(p.tipificacao||'')}</span>`);
-    markers.addLayer(m); n++;
-  });
-  markers.addTo(map);
-  countEl.textContent = `${n} marcadores`;
-}
-function esc(s){return (s||'').toString().replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
-</script>
+    fetch('entidades.geojson').then(r => r.json()).then(geo => {
+      const layer = L.geoJSON(geo, {
+        onEachFeature: (f, layer) => {
+          const p = f.properties;
+          const caps = ['urgencia','ambulatorio','rx','imagiologia','fisioterapia','cirurgia','internamento']
+            .filter(k => p[k])
+            .map(k => `<span class="badge">${k}</span>`)
+            .join(' ');
+          layer.bindPopup(`
+            <div style="min-width:260px">
+              <div style="font-weight:800;">${p.nome || p.estabelecimento || p.entidade}</div>
+              <div style="color:var(--muted); margin:2px 0 6px 0;">${p.tipificacao || ''}</div>
+              <div>${p.morada || ''} ${p.codigo_postal ? ' • ' + p.codigo_postal : ''}</div>
+              <div>${p.localidade || ''} ${p.distrito ? ' • ' + p.distrito : ''}</div>
+              <div class="badges" style="margin-top:6px;">${caps}</div>
+              <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                ${p.telefone ? `<a href="tel:${p.telefone}" class="badge">📞 ${p.telefone}</a>` : ''}
+                ${p.email ? `<a href="mailto:${p.email}" class="badge">✉️ ${p.email}</a>` : ''}
+              </div>
+            </div>
+          `);
+        }
+      }).addTo(map);
+      try { map.fitBounds(layer.getBounds(), { padding: [20,20] }); } catch(e) {}
+    });
+  </script>
 </body>
 </html>
